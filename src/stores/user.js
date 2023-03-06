@@ -4,7 +4,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
 import { auth } from '../firebaseConfig';
 import { async } from '@firebase/util';
 import router from '../router';
-
+import {useUserdatabaseStore} from '../stores/database'
 export const useUserStore = defineStore('userStore', {
     state: () => ({
         userData: null,
@@ -15,30 +15,32 @@ export const useUserStore = defineStore('userStore', {
         },
     },
     actions: {
-     async registerUser(email,password){
-        try {
-           const {user} = await createUserWithEmailAndPassword(auth, email, password);
-           console.log(user)
-           this.userData = {email:user.email, ui:user.uid}
-        } catch (error) {
-            console.log(error)
-        }
-     },
-     async loginUser(email,password){
-        try {
-         const {user} = await signInWithEmailAndPassword(auth,email,password)
-         this.userData = {email: user.email, ui: user.uid}
-        } catch (error) {
-            
-        }
-     },
-     async logOut(){
-        try {
-            await signOut(auth)
+        async registerUser(email,password){
+            try {
+                const {user} = await createUserWithEmailAndPassword(auth, email, password);
+                console.log(user)
+                this.userData = {email:user.email, ui:user.uid}
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        async loginUser(email,password){
+            try {
+                const {user} = await signInWithEmailAndPassword(auth,email,password)
+                this.userData = {email: user.email, ui: user.uid}
+            } catch (error) {
+                
+            }
+        },
+        async logOut(){
+            const dbStore = useUserdatabaseStore();
+            dbStore.$reset()
+            try {
+                await signOut(auth)
             this.userData = null
             router.push('login')
         } catch (error) {
-            console.log(error)
+            console.log(error) 
         }
      },
      currentUser() {
@@ -48,6 +50,8 @@ export const useUserStore = defineStore('userStore', {
                     this.userData = {email: user.email, uid: user.uid};
                 } else {
                     this.userData= null
+                    const dbStore = useUserdatabaseStore();
+                    dbStore.$reset();
                 }
                 resolve(user)
              }, e => reject(e))
