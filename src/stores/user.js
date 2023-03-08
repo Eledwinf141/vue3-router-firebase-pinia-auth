@@ -1,62 +1,85 @@
-import {defineStore} from 'pinia';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
-    signOut, onAuthStateChanged } from "firebase/auth";
-import { auth } from '../firebaseConfig';
-import { async } from '@firebase/util';
-import router from '../router';
-import {useUserdatabaseStore} from '../stores/database'
-export const useUserStore = defineStore('userStore', {
+import { defineStore } from "pinia";
+import {
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    sendEmailVerification,
+    signInWithEmailAndPassword,
+    signOut,
+} from "firebase/auth";
+import { auth } from "../firebaseConfig";
+import router from "../router";
+import { useDatabaseStore } from "./database";
+
+export const useUserStore = defineStore("userStore", {
     state: () => ({
         userData: null,
+        loadingUser: false,
+        loadingSession: false,
     }),
-    getters: {
-        minusculas(state){
-            return state.userData.toLowerCase();
-        },
-    },
     actions: {
-        async registerUser(email,password){
+        async registerUser(email, password) {
+            this.loadingUser = true;
             try {
-                const {user} = await createUserWithEmailAndPassword(auth, email, password);
-                console.log(user)
-                this.userData = {email:user.email, ui:user.uid}
+                await createUserWithEmailAndPassword(auth, email, password);
+                // this.userData = { email: user.email, uid: user.uid };
+                await sendEmailVerification(auth.currentUser);
+                router.push("/login");
             } catch (error) {
-                console.log(error)
+                console.log(error.code);
+                return error.code;
+            } finally {
+                this.loadingUser = false;
             }
         },
-        async loginUser(email,password){
+        async loginUser(email, password) {
+            this.loadingUser = true;
             try {
-                const {user} = await signInWithEmailAndPassword(auth,email,password)
-                this.userData = {email: user.email, ui: user.uid}
+                const { user } = await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+                this.userData = { email: user.email, uid: user.uid };
+                router.push("/");
             } catch (error) {
-                
+                console.log(error.code);
+                return error.code;
+            } finally {
+                this.loadingUser = false;
             }
         },
-        async logOut(){
-            const dbStore = useUserdatabaseStore();
-            dbStore.$reset()
+        async logoutUser() {
+            const databaseStore = useDatabaseStore();
+            databaseStore.$reset();
             try {
-                await signOut(auth)
-            this.userData = null
-            router.push('login')
-        } catch (error) {
-            console.log(error) 
-        }
-     },
-     currentUser() {
-        return new Promise((resolve,reject) =>{
-             const unsuscribe = onAuthStateChanged( auth,user=> {
-                if (user) {
-                    this.userData = {email: user.email, uid: user.uid};
-                } else {
-                    this.userData= null
-                    const dbStore = useUserdatabaseStore();
-                    dbStore.$reset();
-                }
-                resolve(user)
-             }, e => reject(e))
-             unsuscribe();
-        })
-     }
+                await signOut(auth);
+                this.userData = null;
+                router.push("/login");
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        currentUser() {
+            return new Promise((resolve, reject) => {
+                const unsuscribe = onAuthStateChanged(
+                    auth,
+                    (user) => {
+                        if (user) {
+                            this.userData = {
+                                email: user.email,
+                                uid: user.uid,
+                            };
+                        } else {
+                            this.userData = null;
+                            const databaseStore = useDatabaseStore();
+                            databaseStore.$reset();
+                        }
+                        resolve(user);
+                    },
+                    (e) => reject(e)
+                );
+                unsuscribe();
+            });
+        },
     },
 });

@@ -1,11 +1,25 @@
-import { addDoc,deleteDoc, collection, doc, getDocs,getDoc, query, where, updateDoc } from 'firebase/firestore/lite';
-import {defineStore} from 'pinia';
-import { db,auth } from '../firebaseConfig';
-import {nanoid} from 'nanoid'
-import router from '../router';
-export const useUserdatabaseStore = defineStore('database', {
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    updateDoc,
+    where,
+} from "firebase/firestore/lite";
+import { db } from "../firebaseConfig";
+import { defineStore } from "pinia";
+import { auth } from "../firebaseConfig";
+import { nanoid } from "nanoid";
+import router from "../router";
+
+export const useDatabaseStore = defineStore("database", {
     state: () => ({
-        documents: []
+        documents: [],
+        loadingDoc: false,
+        loading: false,
     }),
     actions: {
         async getUrls() {
@@ -33,17 +47,48 @@ export const useUserdatabaseStore = defineStore('database', {
                 this.loadingDoc = false;
             }
         },
-        async readUrl(id){
-        try {
-            const docRef = doc(db,'urls', id);
-            const docSpan = await getDoc(docRef);
-            return docSpan.data().name
-        } catch (error) {
-    console.log(error)
-        }
+        async addUrl(name) {
+            this.loading = true;
+            try {
+                const objetoDoc = {
+                    name: name,
+                    short: nanoid(6),
+                    user: auth.currentUser.uid,
+                };
+                const docRef = await addDoc(collection(db, "urls"), objetoDoc);
+                // console.log(docRef.id);
+                this.documents.push({
+                    ...objetoDoc,
+                    id: docRef.id,
+                });
+            } catch (error) {
+                console.log(error.code);
+                return error.code;
+            } finally {
+                this.loading = false;
+            }
         },
+        async leerUrl(id) {
+            try {
+                const docRef = doc(db, "urls", id);
+                const docSpan = await getDoc(docRef);
 
+                if (!docSpan.exists()) {
+                    throw new Error("no existe el doc");
+                }
+
+                if (docSpan.data().user !== auth.currentUser.uid) {
+                    throw new Error("no le pertenece ese documento");
+                }
+
+                return docSpan.data().name;
+            } catch (error) {
+                console.log(error.message);
+            } finally {
+            }
+        },
         async updateUrl(id, name) {
+            this.loading = true;
             try {
                 const docRef = doc(db, "urls", id);
 
@@ -66,38 +111,35 @@ export const useUserdatabaseStore = defineStore('database', {
                 router.push("/");
             } catch (error) {
                 console.log(error.message);
-            }
-        },
-        async addUrls(name){
-            try {
-                const objetoDoc = {
-                    name: name,
-                    short: nanoid(6),
-                    user: auth.currentUser.uid
-                }
-                const docRef = await addDoc(collection(db, "urls"), objetoDoc )
-                this.documents.push({
-                    ...objetoDoc,
-                    id: docRef.id
-                })
-            } catch (error) {
-                console.log(error);
-            }finally{
-
+                return error.message;
+            } finally {
+                this.loading = false;
             }
         },
         async deleteUrl(id) {
+            this.loading = true;
             try {
-                const docRef = doc(db,'urls', id);
+                const docRef = doc(db, "urls", id);
+
+                const docSpan = await getDoc(docRef);
+                if (!docSpan.exists()) {
+                    throw new Error("no existe el doc");
+                }
+
+                if (docSpan.data().user !== auth.currentUser.uid) {
+                    throw new Error("no le pertenece ese documento");
+                }
+
                 await deleteDoc(docRef);
-                this.documents= this.documents.filter((item) => item.id !== id);
+                this.documents = this.documents.filter(
+                    (item) => item.id !== id
+                );
             } catch (error) {
-                console.log(error);
-            }finally{
-
+                // console.log(error.code);
+                return error.message;
+            } finally {
+                this.loading = false;
             }
-
-        }
-
-    }
-}) 
+        },
+    },
+});
