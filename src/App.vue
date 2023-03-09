@@ -58,6 +58,7 @@ watch(
 </script>
 
 <style>
+
 .container {
     background-color: #fff;
     padding: 24px;
@@ -65,5 +66,17 @@ watch(
 }
 .text-center {
     text-align: center;
+}
+
+.login_Register{
+    background-color: #fff;
+    border:none;
+    width: 50%;
+    left:0;
+    top:0;
+    right:0;
+    margin: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 10%), 0 8px 16px rgb(0 0 0 / 10%);
 }
 </style>

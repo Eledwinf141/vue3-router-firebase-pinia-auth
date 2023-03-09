@@ -23,6 +23,7 @@
                 <a-input v-model:value="formState.url"></a-input>
             </a-form-item>
             <a-form-item>
+                <a-space>
                 <a-button
                     type="primary"
                     html-type="submit"
@@ -31,6 +32,11 @@
                 >
                     Editar URL</a-button
                 >
+                <a-button
+                    type="primary"
+                    @click="router.push(`/`)"
+                    >Volver</a-button>
+                </a-space>
             </a-form-item>
         </a-form>
     </div>
@@ -41,6 +47,8 @@ import { onMounted, reactive } from "vue";
 import { useRoute } from "vue-router";
 import { useDatabaseStore } from "../stores/database";
 import { message } from "ant-design-vue";
+import { useRouter } from "vue-router";
+ const router = useRouter()
 
 const databaseStore = useDatabaseStore();
 
