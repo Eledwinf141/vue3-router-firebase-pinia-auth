@@ -23,23 +23,14 @@
                 <a-input v-model:value="formState.url"></a-input>
             </a-form-item>
             <a-form-item>
-                <a-space>
                 <a-button
                     type="primary"
                     html-type="submit"
                     :loading="databaseStore.loading"
                     :disabled="databaseStore.loading"
-                >Editar URL</a-button>
-                <a-button
-                    type="primary"
-                    html-type="submit"
-                    :loading="databaseStore.loading"
-                    :disabled="databaseStore.loading"
-                    @click="router.push(`/`)"
-                >  <template #icon>
-      <ArrowLeftOutlined  />
-    </template>Volver</a-button>
-                </a-space>
+                >
+                    Editar URL</a-button
+                >
             </a-form-item>
         </a-form>
     </div>
@@ -50,7 +41,6 @@ import { onMounted, reactive } from "vue";
 import { useRoute } from "vue-router";
 import { useDatabaseStore } from "../stores/database";
 import { message } from "ant-design-vue";
-import { SearchOutlined,DownloadOutlined,CaretLeftFilled,ArrowLeftOutlined } from '@ant-design/icons-vue';
 
 const databaseStore = useDatabaseStore();
 
@@ -72,7 +62,7 @@ const onFinish = async (value) => {
         // buscar errores de firestore
         default:
             message.error(
-                "Ocurrió un error en el servidor,por favor intentelo más tarde..."
+                "Ocurrió un error en el servidor 💋 intentelo más tarde..."
             );
             break;
     }
