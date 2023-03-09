@@ -1,6 +1,7 @@
-# Vue 3 + Vite
+# Vue 3 + Vite + firebase + pinia + antDesign proyecto desplegado
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+proyecto con authentficacion y storage de firebase, hecho en vue3  mas store de pinia y ant design vue donde puedes registrarte,loggearte guardar, leer, actualizar y eliminar url, tambien puedes personalizar tu perfil de usuarioo.
+proyecto desplegado https://vue-3-2023-f2064.web.app/login
 
 ## Recommended IDE Setup
 
